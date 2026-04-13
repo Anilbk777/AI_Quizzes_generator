@@ -1,10 +1,9 @@
-from app.core.exceptions import UnsupportedFileError
+from app.core.exceptions import UnsupportedFileError, FileExtractionError, EmptyContentError
 from app.infrastructure.extractors.pdf_extractor import PDFExtractor
 from app.infrastructure.extractors.docx_extractor import DocxExtractor
 from app.infrastructure.extractors.txt_extractor import TxtExtractor
 
-import logging
-logger = logging.getLogger(__name__)
+from app.core.logger import logger
 
 class ExtractorFactory:
     @staticmethod
@@ -24,8 +23,12 @@ class FileExtractor:
     def __init__(self):
         self.factory = ExtractorFactory()
 
-    def extract(self, file_name: str, file_bytes: bytes) -> str:
-        logger.info(f"Starting extraction for {file_name}")
+    def extract(self, file_bytes: bytes, file_name: str) -> str:
+        """
+        Extracts text from various file formats.
+        Note: file_bytes is the first argument to ensure compatibility with strategies.
+        """
+        logger.info(f"Starting extraction for file: {file_name}")
 
         try:
             extractor = self.factory.get_extractor(file_name)
@@ -42,6 +45,5 @@ class FileExtractor:
             logger.error(f"Extraction failed for {file_name}")
             raise
         except Exception as e:
-            logger.exception(f"Unexcepted error during extraction of {file_name}")
-            raise FileExtractionError(f"Unexpected error while extracting ") from e
-    
+            logger.exception(f"Unexpected error during extraction of {file_name}")
+            raise FileExtractionError(f"Unexpected error while extracting {file_name}") from e

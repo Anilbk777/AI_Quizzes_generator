@@ -23,8 +23,8 @@ class Question:
         if not text:
             raise ValueError("Question text cannot be empty")
 
-        if not options or len(options) == 4:
-            raise ValueError("A question must have at least 2 options")
+        if not options or len(options) != 4:
+            raise ValueError("A question must have exactly 4 options")
 
         if correct_answer not in options:
             raise ValueError("Correct answer must be one of the options")
