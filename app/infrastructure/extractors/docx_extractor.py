@@ -1,6 +1,6 @@
 from docx import Document
 from app.infrastructure.extractors.base import BaseExtractor
-from app.core.exceptions import UnsupportedFileError, FileProcessingError, EmptyContentError
+from app.core.exceptions import FileExtractionError, EmptyContentError
 
 import io
 
@@ -15,4 +15,4 @@ class DocxExtractor(BaseExtractor):
                 raise EmptyContentError("DOCX contains no text")
             return text
         except Exception as e:
-            raise FileProcessingError(f"Failed to process DOCX: {str(e)}")
+            raise FileExtractionError(f"Failed to extract text from DOCX: {str(e)}")

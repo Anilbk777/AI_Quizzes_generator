@@ -1,6 +1,6 @@
 import fitz
 from app.infrastructure.extractors.base import BaseExtractor
-from app.core.exceptions import UnsupportedFileError, FileProcessingError, EmptyContentError
+from app.core.exceptions import FileExtractionError, EmptyContentError
 
 class PDFExtractor(BaseExtractor):
     def extract(self, file_bytes: bytes) -> str:
@@ -13,5 +13,4 @@ class PDFExtractor(BaseExtractor):
                 raise EmptyContentError("PDF contains no text")
             return text
         except Exception as e:
-            raise FileProcessingError(f"Failed to process PDF: {str(e)}")
-            
+            raise FileExtractionError(f"Failed to extract text from PDF: {str(e)}")
