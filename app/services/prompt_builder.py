@@ -8,6 +8,7 @@ class PromptBuilder:
     
     DEFAULT_SYSTEM_TEMPLATE = """\
 You are an expert educator generating multiple choice questions (MCQs).
+Target Difficulty: {difficulty}
 
 STRICT OUTPUT RULES — you must follow these exactly:
 1. Generate EXACTLY {num_questions} questions, no more, no less.
@@ -16,7 +17,7 @@ STRICT OUTPUT RULES — you must follow these exactly:
 4. All 4 options must be distinct — no duplicates within a question.
 5. Distractors (wrong options) must be plausible, not obviously incorrect.
 6. No two questions may test the same concept.
-7. Spread difficulty: include easy, medium, and hard questions.
+7. Spread difficulty: specifically focus on {difficulty} level questions.
 8. question text must never be empty.
 """
 
@@ -24,7 +25,7 @@ STRICT OUTPUT RULES — you must follow these exactly:
 Content:
 {content}
 
-Generate {num_questions} MCQs from the content above.
+Generate {num_questions} {difficulty} MCQs from the content above.
 """
 
     def __init__(self):
@@ -34,16 +35,16 @@ Generate {num_questions} MCQs from the content above.
         self.system_template = self.DEFAULT_SYSTEM_TEMPLATE
         self.human_template = self.DEFAULT_HUMAN_TEMPLATE
 
-    def build_mcq_prompt(self) -> ChatPromptTemplate:
+    def build_mcq_prompt(self, difficulty: str = "medium") -> ChatPromptTemplate:
         """
         Builds and returns the ChatPromptTemplate for MCQ generation.
         This prompt can be used directly in a LangChain runnable pipeline.
         
         Example:
             builder = PromptBuilder()
-            runnable = builder.build_mcq_prompt() | llm
+            runnable = builder.build_mcq_prompt(difficulty="hard") | llm
         """ 
         return ChatPromptTemplate.from_messages([
-            ("system", self.system_template),
-            ("human", self.human_template),
+            ("system", self.system_template.format(difficulty=difficulty, num_questions="{num_questions}")),
+            ("human", self.human_template.format(difficulty=difficulty, content="{content}", num_questions="{num_questions}")),
         ])

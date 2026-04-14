@@ -4,10 +4,10 @@ pydantic
 pydantic-settings
 langchain
 langchain-core
-langchain-deepseek
 langchain-groq
 langchain-openai
 python-dotenv
 python-multipart
 fastapi
 uvicorn
+langchain-text-splitters

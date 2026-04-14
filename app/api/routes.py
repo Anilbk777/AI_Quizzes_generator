@@ -1,5 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
-from app.domain.enums import InputType
+from typing import Optional, Any
+from app.domain.enums import InputType, Difficulty
 from app.core.logger import logger
 from app.core.exceptions import QuizGenerationError
 from app.services.quiz_service import QuizService
@@ -9,10 +10,53 @@ from app.utils.schema_mapper import SchemaMapper
 router = APIRouter()
 quiz_service = QuizService()
 
+
+class InputResolver:
+    """
+    Responsible for validating and transforming incoming request data.
+    Keeps controller clean and ensures single responsibility.
+    """
+
+    @staticmethod
+    async def resolve(
+        input_type: InputType,
+        topic: Optional[str],
+        youtube_url: Optional[str],
+        file: Optional[UploadFile],
+    ) -> Any:
+        sources = {
+            InputType.TOPIC: topic,
+            InputType.YOUTUBE: youtube_url,
+            InputType.FILE: file,
+        }
+
+        #  Ensure exactly one input source is provided
+        provided_sources = [k for k, v in sources.items() if v is not None]
+        if len(provided_sources) != 1:
+            raise HTTPException(
+                status_code=400,
+                detail="Exactly one input source must be provided"
+            )
+
+        # Ensure it matches input_type
+        if provided_sources[0] != input_type:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Mismatch between input_type ({input_type}) and provided data"
+            )
+
+        # Transform data
+        if input_type == InputType.FILE:
+            file_bytes = await file.read()
+            return file_bytes, file.filename
+
+        return sources[input_type]
+
 @router.post("/mcq/generate", response_model=QuizResponse)
 async def generate_mcq(
     input_type: InputType = Form(...),
     num_questions: int = Form(5),
+    difficulty: Difficulty = Form(Difficulty.MEDIUM),
     provider_name: str = Form("groq"),
     topic: str = Form(None),
     youtube_url: str = Form(None),
@@ -24,33 +68,23 @@ async def generate_mcq(
     try:
         logger.info(
             f"Received MCQ generation request - input_type: {input_type}, "
-            f"num_questions: {num_questions}, provider_name: {provider_name}"
+            f"num_questions: {num_questions}, difficulty: {difficulty}, provider_name: {provider_name}"
         )
         
         # 1. Validate and prepare input data based on type
-        input_data = None
-        if input_type == InputType.TOPIC:
-            if not topic:
-                raise HTTPException(status_code=400, detail="Topic is required for topic input type")
-            input_data = topic
-        elif input_type == InputType.YOUTUBE:
-            if not youtube_url:
-                raise HTTPException(status_code=400, detail="YouTube URL is required for YouTube input type")
-            input_data = youtube_url
-        elif input_type == InputType.FILE:
-            if not file:
-                raise HTTPException(status_code=400, detail="File is required for file input type")
-            file_bytes = await file.read()
-            input_data = (file_bytes, file.filename)
-        else:
-            raise HTTPException(status_code=400, detail=f"Unsupported input type: {input_type}")
-        
+        input_data = await InputResolver.resolve(
+            input_type=input_type,
+            topic=topic,
+            youtube_url=youtube_url,
+            file=file
+        )
         # 2. Generate quiz domain model through the service
         quiz = quiz_service.generate_quiz(
             input_type=input_type, 
             input_data=input_data, 
             num_questions=num_questions, 
-            provider_name=provider_name
+            provider_name=provider_name,
+            difficulty=difficulty
         )
         
         # 3. Map Domain model to API Response Schema
@@ -75,7 +109,7 @@ async def generate_mcq(
         # Re-raise explicit HTTP exceptions
         raise
     except Exception as e:
-        logger.error(f"Unexpected error in MCQ generation: {str(e)}", exc_info=True)
+        logger.exception("Unexpected error in MCQ generation")
         raise HTTPException(
             status_code=500, 
             detail="An unexpected error occurred during MCQ generation"
