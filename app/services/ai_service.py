@@ -30,6 +30,10 @@ class AIService:
             # 1. Merge selected chunks into one text — always one LLM call
             merged_content = self._chunker.get_content(content, num_questions)
 
+            # Fallback if chunker returns nothing but original content exists (e.g. short topic)
+            if not merged_content and content:
+                merged_content = content
+
             # 2. Build chain once
             chain = self._build_chain(provider_name, temperature, difficulty)
 

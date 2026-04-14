@@ -19,7 +19,7 @@ class TextChunker:
         docs = self._splitter.create_documents([text])
         return [
             doc for doc in docs
-            if len(doc.page_content.strip()) > 100
+            if len(doc.page_content.strip()) > 5
         ]
 
     def get_content(self, text: str, num_questions: int, max_chars: int = 30000) -> str:

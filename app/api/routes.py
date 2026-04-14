@@ -2,7 +2,7 @@ from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from typing import Optional, Any
 from app.domain.enums import InputType, Difficulty
 from app.core.logger import logger
-from app.core.exceptions import QuizGenerationError
+from app.core.exceptions import QuizGenerationError, YouTubeAccessError
 from app.services.quiz_service import QuizService
 from app.schemas.response import QuizResponse
 from app.utils.schema_mapper import SchemaMapper
@@ -102,9 +102,19 @@ async def generate_mcq(
             message="Quiz generated successfully"
         )
     
+    except YouTubeAccessError as e:
+        logger.warning(f"YouTube access error: {str(e)}")
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "error": "youtube_access_blocked",
+                "message": str(e),
+                "suggestion": "Try again later or submit the video topic as text instead."
+            }
+        )
     except QuizGenerationError as e:
         logger.error(f"Quiz generation failed: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=422, detail=str(e))
     except HTTPException:
         # Re-raise explicit HTTP exceptions
         raise

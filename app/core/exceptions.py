@@ -29,3 +29,10 @@ class MCQGenerationError(AIServiceError):
 class QuizGenerationError(Exception):
     """Exception for quiz generation failures"""
     pass
+
+class YouTubeAccessError(QuizGenerationError):
+    """
+    Raised when YouTube blocks transcript access (e.g. IP ban).
+    Signals the API layer to return 503 instead of 500.
+    """
+    pass

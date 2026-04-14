@@ -1,4 +1,3 @@
-# app/mappers/mcq_mapper.py
 from app.domain.models import Question, Quiz
 from app.domain.enums import Difficulty
 from app.schemas.mcq_schema import MCQResponseSchema, MCQQuestionSchema
