@@ -5,6 +5,7 @@ from langchain_core.language_models import BaseChatModel
 from langchain_groq import ChatGroq
 # from langchain_deepseek import ChatDeepSeek
 from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 from dataclasses import dataclass
 
@@ -41,11 +42,22 @@ class DeepSeekProvider(BaseLLMProvider):
             base_url="https://api.deepseek.com",
         )
 
+@dataclass
+class GeminiProvider(BaseLLMProvider):
+    model_name: str = "gemini-2.5-flash"
+
+    def get_llm(self) -> BaseChatModel:
+        return ChatGoogleGenerativeAI(
+            model=self.model_name,
+            temperature=self.temperature,
+            api_key=settings.GEMINI_API_KEY,
+        )
 
 class ProviderFactory:
     _registry: dict[str, type[BaseLLMProvider]] = {
         "groq": GroqProvider,
         "deepseek": DeepSeekProvider,
+        "gemini": GeminiProvider,
     }
 
     @classmethod

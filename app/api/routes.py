@@ -114,7 +114,7 @@ async def generate_mcq(
         )
     except QuizGenerationError as e:
         logger.error(f"Quiz generation failed: {str(e)}")
-        raise HTTPException(status_code=422, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
     except HTTPException:
         # Re-raise explicit HTTP exceptions
         raise
