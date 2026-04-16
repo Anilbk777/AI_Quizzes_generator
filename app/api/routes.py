@@ -6,51 +6,11 @@ from app.core.exceptions import QuizGenerationError, YouTubeAccessError
 from app.services.quiz_service import QuizService
 from app.schemas.response import QuizResponse
 from app.utils.schema_mapper import SchemaMapper
+from app.api.validation import InputResolver
 
 router = APIRouter()
 quiz_service = QuizService()
 
-
-class InputResolver:
-    """
-    Responsible for validating and transforming incoming request data.
-    Keeps controller clean and ensures single responsibility.
-    """
-
-    @staticmethod
-    async def resolve(
-        input_type: InputType,
-        topic: Optional[str],
-        youtube_url: Optional[str],
-        file: Optional[UploadFile],
-    ) -> Any:
-        sources = {
-            InputType.TOPIC: topic,
-            InputType.YOUTUBE: youtube_url,
-            InputType.FILE: file,
-        }
-
-        #  Ensure exactly one input source is provided
-        provided_sources = [k for k, v in sources.items() if v is not None]
-        if len(provided_sources) != 1:
-            raise HTTPException(
-                status_code=400,
-                detail="Exactly one input source must be provided"
-            )
-
-        # Ensure it matches input_type
-        if provided_sources[0] != input_type:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Mismatch between input_type ({input_type}) and provided data"
-            )
-
-        # Transform data
-        if input_type == InputType.FILE:
-            file_bytes = await file.read()
-            return file_bytes, file.filename
-
-        return sources[input_type]
 
 @router.post("/mcq/generate", response_model=QuizResponse)
 async def generate_mcq(
@@ -58,7 +18,7 @@ async def generate_mcq(
     num_questions: int = Form(5),
     difficulty: Difficulty = Form(Difficulty.MEDIUM),
     provider_name: str = Form("groq"),
-    topic: str = Form(None),
+    topic: str = Form(None), 
     youtube_url: str = Form(None),
     file: UploadFile = File(None),
 ):
