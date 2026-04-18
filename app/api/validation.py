@@ -1,6 +1,7 @@
 from app.domain.enums import InputType
 from fastapi import HTTPException, UploadFile
 from typing import Optional, Any
+import re
 
 class InputResolver:
     """
@@ -35,16 +36,32 @@ class InputResolver:
                 status_code=400,
                 detail=f"Mismatch between input_type ({input_type}) and provided data"
             )
-
-        # Transform data
         if input_type == InputType.FILE:
+            if file and file.filename.split(".")[-1].lower() not in ["pdf", "doc", "docx", "txt"]:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid file type"
+                )
             file_bytes = await file.read()
             return file_bytes, file.filename
             
-        if len(topic) > 1000:
-            raise HTTPException(
-                status_code=400,
-                detail="Topic must not exceed 1000 characters"
-            )
+        if input_type == InputType.TOPIC:
+            if len(topic) > 1000:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Topic must not exceed 1000 characters"
+                )
+        
+        if input_type == InputType.YOUTUBE:
+            if not InputResolver.is_valid_youtube_url(youtube_url):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid YouTube URL"
+                )
 
         return sources[input_type]
+
+    @staticmethod
+    def is_valid_youtube_url(url: str) -> bool:
+        youtube_regex = r"^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})$"
+        return re.match(youtube_regex, url) is not None
