@@ -1,4 +1,52 @@
+/* ── Imports ────────────────────────────────── */
+import { buildFormData, generateQuiz } from './api.js';
+
 /* ── Source-type Tab Switching ─────────────── */
+
+const sourceButtons = document.querySelectorAll('.source-btn');
+const PANELS = {
+    topic:    document.getElementById('panel-text'),
+    file:    document.getElementById('panel-file'),
+    youtube: document.getElementById('panel-youtube'),
+};
+
+sourceButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        const type = btn.dataset.type;
+
+        // Button active state
+        sourceButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Panel switching
+        Object.entries(PANELS).forEach(([key, panel]) => {
+            if (key === type) {
+                panel.classList.add('active-panel');
+                panel.removeAttribute('aria-hidden');
+            } else {
+                panel.classList.remove('active-panel');
+                panel.setAttribute('aria-hidden', 'true');
+            }
+        });
+
+        createRipple(btn);
+    });
+});
+
+function createRipple(el) {
+    const ripple = document.createElement('span');
+    ripple.style.cssText = `
+        position:absolute; border-radius:50%;
+        width:80px; height:80px;
+        background:rgba(255,255,255,0.18);
+        transform:scale(0); opacity:1;
+        left:50%; top:50%; translate:-50% -50%;
+        animation: rippleAnim 0.5s ease-out forwards;
+        pointer-events:none; z-index:2;
+    `;
+    el.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 500);
+}
 
 const styleTag = document.createElement('style');
 styleTag.textContent = `@keyframes rippleAnim { to { transform: scale(3); opacity: 0; } }`;
@@ -239,10 +287,10 @@ generateBtn.addEventListener('click', async () => {
 
     // Determine active panel and validate input
     const activeBtn  = document.querySelector('.source-btn.active');
-    const activeType = activeBtn?.dataset.type ?? 'text';
+    const activeType = activeBtn?.dataset.type ?? 'topic';
     let valid = false;
 
-    if (activeType === 'text') {
+    if (activeType === 'topic') {
         valid = textarea.value.trim().length > 0;
         if (!valid) { shakeElement(textarea.closest('.textarea-wrapper')); textarea.focus(); }
     } else if (activeType === 'file') {
@@ -264,9 +312,14 @@ generateBtn.addEventListener('click', async () => {
     generateBtn.disabled = true;
 
     try {
-        await simulateAPICall();
+        const formData = buildFormData();
+        const response = await generateQuiz(formData);
+        console.log('Quiz generated successfully:', response);
+        // TODO: Redirect to quiz view or show success state
+        alert("Quiz generated successfully! (Check console for data)");
     } catch (err) {
         console.error('Quiz generation failed:', err);
+        alert(err.message || "An error occurred while generating the quiz.");
     } finally {
         generateBtn.classList.remove('loading');
         generateBtn.disabled = false;
@@ -282,8 +335,4 @@ function shakeElement(el) {
         { transform: 'translateX(4px)' },
         { transform: 'translateX(0)' },
     ], { duration: 380, easing: 'ease-in-out' });
-}
-
-function simulateAPICall() {
-    return new Promise(resolve => setTimeout(resolve, 2200));
 }
