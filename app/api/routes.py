@@ -12,7 +12,7 @@ router = APIRouter()
 quiz_service = QuizService()
 
 
-@router.post("/mcq/generate", response_model=QuizResponse)
+@router.post("/api/mcq/generate", response_model=QuizResponse)
 async def generate_mcq(
     input_type: InputType = Form(...),
     num_questions: int = Form(5),
