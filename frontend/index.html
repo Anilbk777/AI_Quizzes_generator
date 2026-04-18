@@ -27,10 +27,10 @@
 
         <!-- Header -->
         <div id="header">
-            <div class="badge">
+            <!-- <div class="badge">
                 <i class="ri-sparkling-2-fill"></i>
                 Powered by AI
-            </div>
+            </div> -->
             <h1>
                 AI Quiz <span class="gradient-text">Generator</span>
             </h1>
@@ -56,8 +56,9 @@
             </button>
         </div>
 
-        <!-- Input Area -->
-        <div id="text">
+        <!-- Input Area (three panels, only one visible at a time) -->
+        <!-- TEXT PANEL -->
+        <div id="panel-text" class="input-panel active-panel">
             <div class="textarea-wrapper">
                 <textarea
                     id="topic-input"
@@ -70,72 +71,148 @@
                     <span id="char-count">0 / 1000</span>
                 </div>
             </div>
+        </div>
 
-            <!-- Options Row — custom drop-up selects -->
-            <div id="options">
+        <!--  FILE UPLOAD PANEL -->
+        <div id="panel-file" class="input-panel" aria-hidden="true">
+            <div class="upload-zone" id="upload-zone" role="button" tabindex="0" aria-label="Upload a file">
+                <!-- Hidden real file input -->
+                <input type="file" id="file-input" accept=".pdf,.doc,.docx,.txt" hidden aria-hidden="true">
 
-                <!-- Difficulty drop-up -->
-                <div class="option-group">
-                    <span class="option-label">
-                        <i class="ri-bar-chart-2-line"></i>
-                        Difficulty
-                    </span>
-                    <div class="dropup" id="dropup-difficulty" data-name="difficulty" aria-haspopup="listbox" aria-expanded="false">
-                        <button class="dropup-trigger" type="button" aria-label="Select difficulty level">
-                            <span class="dropup-value">Medium</span>
-                            <i class="ri-arrow-up-s-line dropup-arrow"></i>
-                        </button>
-                        <ul class="dropup-menu" role="listbox" aria-label="Difficulty level">
-                            <li class="dropup-item" data-value="easy" role="option">Easy</li>
-                            <li class="dropup-item active" data-value="medium" role="option" aria-selected="true">Medium</li>
-                            <li class="dropup-item" data-value="hard" role="option">Hard</li>
-                        </ul>
-                        <!-- Hidden input for form submission -->
-                        <input type="hidden" name="difficulty" value="medium">
+                <div class="upload-idle" id="upload-idle">
+                    <div class="upload-icon-wrap">
+                        <i class="ri-file-upload-line"></i>
                     </div>
+                    <p class="upload-title">Drop your file here</p>
+                    <p class="upload-sub">or <button type="button" class="upload-browse-btn" id="upload-browse-btn">browse to upload</button></p>
+                    <div class="upload-formats">
+                        <span class="fmt-chip"><i class="ri-file-pdf-2-line"></i> PDF</span>
+                        <span class="fmt-chip"><i class="ri-file-word-line"></i> DOC / DOCX</span>
+                        <span class="fmt-chip"><i class="ri-file-text-line"></i> TXT</span>
+                    </div>
+                    <p class="upload-hint">Max file size: <strong>10 MB</strong></p>
                 </div>
 
-                <!-- Number of Questions drop-up -->
-                <div class="option-group">
-                    <span class="option-label">
-                        <i class="ri-list-ordered-2"></i>
-                        Questions
-                    </span>
-                    <div class="dropup" id="dropup-questions" data-name="number-of-questions" aria-haspopup="listbox" aria-expanded="false">
-                        <button class="dropup-trigger" type="button" aria-label="Select number of questions">
-                            <span class="dropup-value">10</span>
-                            <i class="ri-arrow-up-s-line dropup-arrow"></i>
-                        </button>
-                        <ul class="dropup-menu" role="listbox" aria-label="Number of questions">
-                            <li class="dropup-item" data-value="5" role="option">5</li>
-                            <li class="dropup-item active" data-value="10" role="option" aria-selected="true">10</li>
-                            <li class="dropup-item" data-value="15" role="option">15</li>
-                            <li class="dropup-item" data-value="20" role="option">20</li>
-                        </ul>
-                        <input type="hidden" name="number-of-questions" value="10">
+                <!-- Selected file preview (hidden until file chosen, now inside the box) -->
+                <div class="file-preview" id="file-preview" hidden>
+                    <div class="file-preview-icon" id="file-preview-icon">
+                        <i class="ri-file-2-line"></i>
                     </div>
+                    <div class="file-preview-info">
+                        <span class="file-preview-name" id="file-preview-name"></span>
+                        <span class="file-preview-size" id="file-preview-size"></span>
+                    </div>
+                    <button type="button" class="file-remove-btn" id="file-remove-btn" aria-label="Remove file">
+                        <i class="ri-close-circle-line"></i>
+                    </button>
                 </div>
 
-                <!-- Model drop-up -->
-                <div class="option-group">
-                    <span class="option-label">
-                        <i class="ri-cpu-line"></i>
-                        Model
-                    </span>
-                    <div class="dropup" id="dropup-model" data-name="llm" aria-haspopup="listbox" aria-expanded="false">
-                        <button class="dropup-trigger" type="button" aria-label="Select AI language model">
-                            <span class="dropup-value">Groq</span>
-                            <i class="ri-arrow-up-s-line dropup-arrow"></i>
-                        </button>
-                        <ul class="dropup-menu" role="listbox" aria-label="AI model">
-                            <li class="dropup-item active" data-value="groq" role="option" aria-selected="true">Groq</li>
-                            <li class="dropup-item" data-value="gemini" role="option">Gemini</li>
-                        </ul>
-                        <input type="hidden" name="llm" value="groq">
-                    </div>
+                <!-- Dragging-over state overlay -->
+                <div class="upload-dragover" id="upload-dragover" aria-hidden="true">
+                    <i class="ri-download-2-line"></i>
+                    <p>Release to upload</p>
                 </div>
-
             </div>
+        </div>
+
+        <!-- YOUTUBE PANEL -->
+        <div id="panel-youtube" class="input-panel" aria-hidden="true">
+            <div class="yt-wrapper">
+                <div class="yt-input-row">
+                    <span class="yt-icon-wrap">
+                        <i class="ri-youtube-fill"></i>
+                    </span>
+                    <input
+                        type="url"
+                        id="yt-url-input"
+                        name="youtube-url"
+                        placeholder="Paste YouTube URL here…"
+                        aria-label="YouTube video URL"
+                        autocomplete="off"
+                        spellcheck="false"
+                    >
+                  
+                </div>
+                <div class="yt-info">
+                    <div class="yt-info-item">
+                        <i class="ri-checkbox-circle-line"></i>
+                        Works with any public YouTube video
+                    </div>
+                    <div class="yt-info-item">
+                        <i class="ri-checkbox-circle-line"></i>
+                        Automatically extracts transcript &amp; subtitles
+                    </div>
+                    <div class="yt-info-item">
+                        <i class="ri-checkbox-circle-line"></i>
+                        Supports videos up to 2 hours long
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Options Row (shared across all panels) -->
+        <div id="options">
+
+            <!-- Difficulty drop-up -->
+            <div class="option-group">
+                <span class="option-label">
+                    <i class="ri-bar-chart-2-line"></i>
+                    Difficulty
+                </span>
+                <div class="dropup" id="dropup-difficulty" data-name="difficulty" aria-haspopup="listbox" aria-expanded="false">
+                    <button class="dropup-trigger" type="button" aria-label="Select difficulty level">
+                        <span class="dropup-value">Medium</span>
+                        <i class="ri-arrow-up-s-line dropup-arrow"></i>
+                    </button>
+                    <ul class="dropup-menu" role="listbox" aria-label="Difficulty level">
+                        <li class="dropup-item" data-value="easy" role="option">Easy</li>
+                        <li class="dropup-item active" data-value="medium" role="option" aria-selected="true">Medium</li>
+                        <li class="dropup-item" data-value="hard" role="option">Hard</li>
+                    </ul>
+                    <input type="hidden" name="difficulty" value="medium">
+                </div>
+            </div>
+
+            <!-- Number of Questions drop-up -->
+            <div class="option-group">
+                <span class="option-label">
+                    <i class="ri-list-ordered-2"></i>
+                    Questions
+                </span>
+                <div class="dropup" id="dropup-questions" data-name="number-of-questions" aria-haspopup="listbox" aria-expanded="false">
+                    <button class="dropup-trigger" type="button" aria-label="Select number of questions">
+                        <span class="dropup-value">10</span>
+                        <i class="ri-arrow-up-s-line dropup-arrow"></i>
+                    </button>
+                    <ul class="dropup-menu" role="listbox" aria-label="Number of questions">
+                        <li class="dropup-item" data-value="5" role="option">5</li>
+                        <li class="dropup-item active" data-value="10" role="option" aria-selected="true">10</li>
+                        <li class="dropup-item" data-value="15" role="option">15</li>
+                        <li class="dropup-item" data-value="20" role="option">20</li>
+                    </ul>
+                    <input type="hidden" name="number-of-questions" value="10">
+                </div>
+            </div>
+
+            <!-- Model drop-up -->
+            <div class="option-group">
+                <span class="option-label">
+                    <i class="ri-cpu-line"></i>
+                    Model
+                </span>
+                <div class="dropup" id="dropup-model" data-name="llm" aria-haspopup="listbox" aria-expanded="false">
+                    <button class="dropup-trigger" type="button" aria-label="Select AI language model">
+                        <span class="dropup-value">Groq</span>
+                        <i class="ri-arrow-up-s-line dropup-arrow"></i>
+                    </button>
+                    <ul class="dropup-menu" role="listbox" aria-label="AI model">
+                        <li class="dropup-item active" data-value="groq" role="option" aria-selected="true">Groq</li>
+                        <li class="dropup-item" data-value="gemini" role="option">Gemini</li>
+                    </ul>
+                    <input type="hidden" name="llm" value="groq">
+                </div>
+            </div>
+
         </div>
 
         <!-- Generate Button -->
