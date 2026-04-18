@@ -3,38 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Quiz Generator</title>
+    <title>AI Quiz Generator — Create Smarter Quizzes Instantly</title>
+    <meta name="description" content="Turn any topic, YouTube video, or file into structured multiple-choice questions in seconds using AI.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Remix Icons -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
 
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+    <!-- Animated background orbs -->
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+
     <div id="main">
+
+        <!-- Header -->
         <div id="header">
-            <h2>
-                AI Quiz Generator
-            </h2>
+            <div class="badge">
+                <i class="ri-sparkling-2-fill"></i>
+                Powered by AI
+            </div>
+            <h1>
+                AI Quiz <span class="gradient-text">Generator</span>
+            </h1>
             <p>
-                Create quizzes instantly with our AI-powered generator. Turn any topic, YouTube video, or file into structured
-                multiple-choice questions in seconds.
+                Turn any topic, YouTube video, or file into structured
+                multiple-choice questions in <em>seconds</em>.
             </p>
         </div>
+
+        <!-- Source Type Buttons -->
         <div id="buttons">
-            <button>
-                <i class="ri-t-box-line"></i>Text
+            <button class="source-btn active" data-type="text" id="btn-text" aria-label="Use text as input source">
+                <i class="ri-t-box-line"></i>
+                <span>Text</span>
             </button>
-            <button>
-                <i class="ri-file-text-line"></i>File
+            <button class="source-btn" data-type="file" id="btn-file" aria-label="Upload a file as input source">
+                <i class="ri-file-text-line"></i>
+                <span>File</span>
             </button>
-            <button>
-                <i class="ri-youtube-fill"></i>YouTube
+            <button class="source-btn" data-type="youtube" id="btn-youtube" aria-label="Use YouTube video as input source">
+                <i class="ri-youtube-fill"></i>
+                <span>YouTube</span>
             </button>
         </div>
+
+        <!-- Input Area -->
         <div id="text">
-            <textarea name="text-area">Type your topic here to get your quiz.</textarea>
+            <div class="textarea-wrapper">
+                <textarea
+                    id="topic-input"
+                    name="text-area"
+                    maxlength="1000"
+                    placeholder="Type your topic or paste content here…"
+                    aria-label="Quiz topic input"
+                ></textarea>
+                <div class="textarea-footer">
+                    <span id="char-count">0 / 1000</span>
+                </div>
+            </div>
+
+            <!-- Options Row — custom drop-up selects -->
+            <div id="options">
+
+                <!-- Difficulty drop-up -->
+                <div class="option-group">
+                    <span class="option-label">
+                        <i class="ri-bar-chart-2-line"></i>
+                        Difficulty
+                    </span>
+                    <div class="dropup" id="dropup-difficulty" data-name="difficulty" aria-haspopup="listbox" aria-expanded="false">
+                        <button class="dropup-trigger" type="button" aria-label="Select difficulty level">
+                            <span class="dropup-value">Medium</span>
+                            <i class="ri-arrow-up-s-line dropup-arrow"></i>
+                        </button>
+                        <ul class="dropup-menu" role="listbox" aria-label="Difficulty level">
+                            <li class="dropup-item" data-value="easy" role="option">Easy</li>
+                            <li class="dropup-item active" data-value="medium" role="option" aria-selected="true">Medium</li>
+                            <li class="dropup-item" data-value="hard" role="option">Hard</li>
+                        </ul>
+                        <!-- Hidden input for form submission -->
+                        <input type="hidden" name="difficulty" value="medium">
+                    </div>
+                </div>
+
+                <!-- Number of Questions drop-up -->
+                <div class="option-group">
+                    <span class="option-label">
+                        <i class="ri-list-ordered-2"></i>
+                        Questions
+                    </span>
+                    <div class="dropup" id="dropup-questions" data-name="number-of-questions" aria-haspopup="listbox" aria-expanded="false">
+                        <button class="dropup-trigger" type="button" aria-label="Select number of questions">
+                            <span class="dropup-value">10</span>
+                            <i class="ri-arrow-up-s-line dropup-arrow"></i>
+                        </button>
+                        <ul class="dropup-menu" role="listbox" aria-label="Number of questions">
+                            <li class="dropup-item" data-value="5" role="option">5</li>
+                            <li class="dropup-item active" data-value="10" role="option" aria-selected="true">10</li>
+                            <li class="dropup-item" data-value="15" role="option">15</li>
+                            <li class="dropup-item" data-value="20" role="option">20</li>
+                        </ul>
+                        <input type="hidden" name="number-of-questions" value="10">
+                    </div>
+                </div>
+
+                <!-- Model drop-up -->
+                <div class="option-group">
+                    <span class="option-label">
+                        <i class="ri-cpu-line"></i>
+                        Model
+                    </span>
+                    <div class="dropup" id="dropup-model" data-name="llm" aria-haspopup="listbox" aria-expanded="false">
+                        <button class="dropup-trigger" type="button" aria-label="Select AI language model">
+                            <span class="dropup-value">Groq</span>
+                            <i class="ri-arrow-up-s-line dropup-arrow"></i>
+                        </button>
+                        <ul class="dropup-menu" role="listbox" aria-label="AI model">
+                            <li class="dropup-item active" data-value="groq" role="option" aria-selected="true">Groq</li>
+                            <li class="dropup-item" data-value="gemini" role="option">Gemini</li>
+                        </ul>
+                        <input type="hidden" name="llm" value="groq">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Generate Button -->
+        <div id="generate">
+            <button id="generate-btn" aria-label="Generate quiz">
+                <span class="btn-content">
+                    <i class="ri-pencil-ai-line"></i>
+                    Generate Quiz
+                </span>
+                <span class="btn-loader" aria-hidden="true">
+                    <i class="ri-loader-4-line spin"></i>
+                    Generating…
+                </span>
+                <div class="btn-glow"></div>
+            </button>
         </div>
 
     </div>
-    
+
+    <script src="app.js"></script>
 </body>
 </html>
