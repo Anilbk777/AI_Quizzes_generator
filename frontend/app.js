@@ -148,15 +148,17 @@ function handleFile(file) {
     const allowedExts = ['pdf', 'doc', 'docx', 'txt'];
 
     if (!allowedExts.includes(ext)) {
-        alert(`Unsupported file type. Please upload a PDF, DOC, DOCX, or TXT file.`);
+        showToast(`Unsupported file type. Please upload a PDF, DOC, DOCX, or TXT file.`, 'error');
         return;
     }
 
+
     const MAX_MB = 10;
     if (file.size > MAX_MB * 1024 * 1024) {
-        alert(`File too large. Maximum size is ${MAX_MB} MB.`);
+        showToast(`File too large. Maximum size is ${MAX_MB} MB.`, 'error');
         return;
     }
+
 
     // Show preview
     filePreviewName.textContent = file.name;
@@ -208,7 +210,9 @@ if (ytPasteBtn) {
         } catch {
             // Clipboard permission denied — just focus the input
             ytUrlInput.focus();
+            showToast("Clipboard access denied. Please paste manually.", "warning");
         }
+
     });
 }
 
@@ -313,16 +317,324 @@ generateBtn.addEventListener('click', async () => {
 
     try {
         const formData = buildFormData();
+        
+        // Capture context title for the PDF
+        let quizTitle = "AI Generated Quiz";
+        if (activeType === 'topic') {
+            const rawTopic = textarea.value.trim();
+            // Take first line or first 60 chars
+            quizTitle = rawTopic.split('\n')[0];
+            if (quizTitle.length > 60) {
+                quizTitle = quizTitle.substring(0, 57) + "...";
+            }
+        } else if (activeType === 'file') {
+            quizTitle = fileInput.files[0].name;
+        } else if (activeType === 'youtube') {
+            quizTitle = "YouTube Video Quiz";
+        }
+
+
         const response = await generateQuiz(formData);
         console.log('Quiz generated successfully:', response);
-        // TODO: Redirect to quiz view or show success state
-        alert("Quiz generated successfully! (Check console for data)");
+        
+        if (response.success && response.data.questions) {
+            initQuizPlayer(response.data.questions, quizTitle);
+        } else {
+            throw new Error("Invalid response format from server.");
+        }
     } catch (err) {
+
         console.error('Quiz generation failed:', err);
-        alert(err.message || "An error occurred while generating the quiz.");
+        showToast(err.message || "An error occurred while generating the quiz.", "error");
     } finally {
+
         generateBtn.classList.remove('loading');
         generateBtn.disabled = false;
+    }
+});
+
+/* ══════════════════════════════════════════════
+   QUIZ PLAYER LOGIC
+   ══════════════════════════════════════════════ */
+
+let quizState = {
+    questions: [],
+    currentIdx: 0,
+    userAnswers: {}, // index -> selectedKey
+    isFinished: false,
+    quizTitle: "Quiz"
+};
+
+
+const MODAL = {
+    overlay:        document.getElementById('quiz-modal-overlay'),
+    card:           document.getElementById('quiz-modal'),
+    progressText:   document.getElementById('quiz-progress-text'),
+    progressFill:   document.getElementById('quiz-progress-fill'),
+    questionText:   document.getElementById('quiz-question-text'),
+    optionsGrid:    document.getElementById('quiz-options'),
+    explanationBox: document.getElementById('quiz-explanation-box'),
+    explanationText:document.getElementById('quiz-explanation-text'),
+    explanationIcon:document.getElementById('explanation-icon'),
+    prevBtn:        document.getElementById('prev-question-btn'),
+    nextBtn:        document.getElementById('next-question-btn'),
+    closeBtn:       document.getElementById('close-quiz-btn'),
+    downloadBtn:    document.getElementById('download-quiz-btn'),
+    resultView:     document.getElementById('quiz-result-view'),
+    finalScore:     document.getElementById('quiz-final-score'),
+    closeResultsBtn:document.getElementById('close-results-btn'),
+    downloadResultsBtn: document.getElementById('download-results-btn'),
+};
+
+function initQuizPlayer(questions, title) {
+    quizState = {
+        questions: questions,
+        currentIdx: 0,
+        userAnswers: {},
+        isFinished: false,
+        quizTitle: title || "Quiz"
+    };
+
+
+    // Reset UI
+    MODAL.resultView.hidden = true;
+    MODAL.explanationBox.hidden = true;
+    MODAL.overlay.hidden = false;
+    MODAL.overlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden'; // Stop scrolling
+
+    renderQuestion();
+}
+
+function renderQuestion() {
+    const { questions, currentIdx, userAnswers } = quizState;
+    const q = questions[currentIdx];
+    const total = questions.length;
+
+    // Update Progress
+    MODAL.progressText.textContent = `Question ${currentIdx + 1} of ${total}`;
+    MODAL.progressFill.style.width = `${((currentIdx + 1) / total) * 100}%`;
+
+    // Update Question
+    MODAL.questionText.textContent = q.question;
+
+    // Render Options
+    MODAL.optionsGrid.innerHTML = '';
+    const previousSelection = userAnswers[currentIdx];
+
+    q.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        if (previousSelection) btn.classList.add('disabled');
+        
+        btn.innerHTML = `
+            <span class="option-key">${opt.key}</span>
+            <span class="option-text">${opt.text}</span>
+        `;
+
+        // Logic for showing state if already answered
+        if (previousSelection) {
+            if (opt.key === q.correct_option) {
+                btn.classList.add('correct');
+            } else if (opt.key === previousSelection) {
+                btn.classList.add('incorrect');
+            }
+        } else {
+            btn.addEventListener('click', () => handleSelection(opt.key));
+        }
+
+        MODAL.optionsGrid.appendChild(btn);
+    });
+
+    // Handle Explanation
+    if (previousSelection) {
+        showExplanation(q.explanation, previousSelection === q.correct_option);
+    } else {
+        MODAL.explanationBox.hidden = true;
+    }
+
+    // Nav Buttons
+    MODAL.prevBtn.disabled = currentIdx === 0;
+    
+    if (currentIdx === total - 1) {
+        MODAL.nextBtn.querySelector('span').textContent = 'Finish Quiz';
+        MODAL.nextBtn.querySelector('i').className = 'ri-check-double-line';
+    } else {
+        MODAL.nextBtn.querySelector('span').textContent = 'Next Question';
+        MODAL.nextBtn.querySelector('i').className = 'ri-arrow-right-s-line';
+    }
+
+    // Only enable Next if question is answered
+    MODAL.nextBtn.disabled = !previousSelection;
+}
+
+function handleSelection(selectedKey) {
+    const { questions, currentIdx } = quizState;
+    const q = questions[currentIdx];
+
+    quizState.userAnswers[currentIdx] = selectedKey;
+
+    // Visual feedback
+    const btns = MODAL.optionsGrid.querySelectorAll('.option-btn');
+    btns.forEach((btn, idx) => {
+        const key = q.options[idx].key;
+        btn.classList.add('disabled');
+        
+        if (key === q.correct_option) {
+            btn.classList.add('correct');
+        } else if (key === selectedKey) {
+            btn.classList.add('incorrect');
+        }
+    });
+
+    showExplanation(q.explanation, selectedKey === q.correct_option);
+    MODAL.nextBtn.disabled = false;
+}
+
+function showExplanation(text, isCorrect) {
+    MODAL.explanationText.textContent = text;
+    MODAL.explanationBox.hidden = false;
+    
+    if (isCorrect) {
+        MODAL.explanationIcon.className = 'ri-checkbox-circle-line';
+        MODAL.explanationIcon.style.color = '#34d399';
+    } else {
+        MODAL.explanationIcon.className = 'ri-error-warning-line';
+        MODAL.explanationIcon.style.color = '#f87171';
+    }
+}
+
+function calculateScore() {
+    let score = 0;
+    quizState.questions.forEach((q, idx) => {
+        if (quizState.userAnswers[idx] === q.correct_option) score++;
+    });
+    return score;
+}
+
+function showResults() {
+    const score = calculateScore();
+    const total = quizState.questions.length;
+    
+    MODAL.finalScore.textContent = `${score} / ${total}`;
+    MODAL.resultView.hidden = false;
+    MODAL.isFinished = true;
+}
+
+function closeQuiz() {
+    MODAL.overlay.hidden = true;
+    MODAL.overlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+}
+
+function downloadQuiz() {
+    const { questions, quizTitle } = quizState;
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    const margin = 20;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const usableWidth = pageWidth - (margin * 2);
+    let y = margin;
+
+    // Helper to add footer
+    const addFooter = (doc, pageNum) => {
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "italic");
+        doc.setTextColor(150);
+        doc.text("Generated by AI Quiz Generator", margin, pageHeight - 10);
+        doc.text(`Page ${pageNum}`, pageWidth - margin - 15, pageHeight - 10);
+    };
+
+    // Helper to check for page breaks
+    const checkPageBreak = (neededHeight) => {
+        if (y + neededHeight > pageHeight - 25) {
+            addFooter(doc, doc.internal.getNumberOfPages());
+            doc.addPage();
+            y = margin;
+            return true;
+        }
+        return false;
+    };
+
+    // --- Title ---
+    doc.setFontSize(22);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(67, 56, 202); // Primary matching color (violet)
+    const titleText = doc.splitTextToSize(`Quiz: ${quizTitle}`, usableWidth);
+    doc.text(titleText, margin, y);
+    y += (titleText.length * 10) + 10;
+
+    questions.forEach((q, i) => {
+        // --- Question Heading ---
+        checkPageBreak(20);
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(31, 41, 55); // Gray-800
+        const qText = doc.splitTextToSize(`Q${i + 1}: ${q.question}`, usableWidth);
+        doc.text(qText, margin, y);
+        y += (qText.length * 7) + 5;
+
+        // --- Options ---
+        q.options.forEach(opt => {
+            const isCorrect = opt.key === q.correct_option;
+            const text = `${opt.key}. ${opt.text}${isCorrect ? " (Correct Answer)" : ""}`;
+            
+            checkPageBreak(10);
+            doc.setFontSize(11);
+            if (isCorrect) {
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(16, 185, 129); // Emerald-500
+            } else {
+                doc.setFont("helvetica", "normal");
+                doc.setTextColor(75, 85, 99); // Gray-600
+            }
+            
+            const optLines = doc.splitTextToSize(text, usableWidth - 5);
+            doc.text(optLines, margin + 5, y);
+            y += (optLines.length * 6) + 2;
+        });
+
+        // --- Explanation ---
+        y += 3;
+        const expLines = doc.splitTextToSize(`Explanation: ${q.explanation}`, usableWidth);
+        checkPageBreak(expLines.length * 6 + 10);
+        
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(10);
+        doc.setTextColor(107, 114, 128); // Gray-500
+        doc.text(expLines, margin, y);
+        y += (expLines.length * 6) + 15;
+    });
+
+    // Final Footer
+    addFooter(doc, doc.internal.getNumberOfPages());
+
+    doc.save(`Quiz_${quizTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`);
+}
+
+
+// ── Event Listeners ──
+
+MODAL.closeBtn.addEventListener('click', closeQuiz);
+MODAL.closeResultsBtn.addEventListener('click', closeQuiz);
+MODAL.downloadResultsBtn.addEventListener('click', downloadQuiz);
+MODAL.downloadBtn.addEventListener('click', downloadQuiz);
+
+MODAL.prevBtn.addEventListener('click', () => {
+    if (quizState.currentIdx > 0) {
+        quizState.currentIdx--;
+        renderQuestion();
+    }
+});
+
+MODAL.nextBtn.addEventListener('click', () => {
+    if (quizState.currentIdx < quizState.questions.length - 1) {
+        quizState.currentIdx++;
+        renderQuestion();
+    } else {
+        showResults();
     }
 });
 

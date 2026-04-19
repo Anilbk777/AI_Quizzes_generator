@@ -14,6 +14,9 @@
     <!-- Remix Icons -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
 
+    <!-- jsPDF for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -228,7 +231,86 @@
 
     </div>
 
+    <!-- Quiz Modal -->
+    <div id="quiz-modal-overlay" class="modal-overlay" hidden aria-hidden="true">
+        <div id="quiz-modal" class="modal-card">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <div class="quiz-progress-wrap">
+                    <span id="quiz-progress-text">Question 1 of 5</span>
+                    <div class="progress-bar">
+                        <div id="quiz-progress-fill" class="progress-fill" style="width: 20%;"></div>
+                    </div>
+                </div>
+                <button id="close-quiz-btn" class="modal-close-btn" aria-label="Close quiz">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="modal-content">
+                <div id="quiz-question-container">
+                    <h2 id="quiz-question-text">Loading question...</h2>
+                    <div id="quiz-options" class="options-grid">
+                        <!-- Options will be injected here -->
+                    </div>
+                </div>
+
+                <!-- Explanation Area (Revealed after selection) -->
+                <div id="quiz-explanation-box" class="explanation-box" hidden>
+                    <div class="explanation-header">
+                        <i id="explanation-icon" class="ri-checkbox-circle-line"></i>
+                        <span id="explanation-title">Explanation</span>
+                    </div>
+                    <p id="quiz-explanation-text"></p>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer">
+                <button id="prev-question-btn" class="nav-btn secondary" disabled>
+                    <i class="ri-arrow-left-s-line"></i>
+                    <span>Previous</span>
+                </button>
+                <div class="footer-actions">
+                    <button id="download-quiz-btn" class="nav-btn action" hidden>
+                        <i class="ri-download-cloud-2-line"></i>
+                        <span>Download Quiz</span>
+                    </button>
+                    <button id="next-question-btn" class="nav-btn primary">
+                        <span>Next Question</span>
+                        <i class="ri-arrow-right-s-line"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Result State (Hidden by default) -->
+            <div id="quiz-result-view" class="result-view" hidden>
+                <div class="result-icon-wrap">
+                    <i class="ri-trophy-line"></i>
+                </div>
+                <h2>Quiz Complete!</h2>
+                <div class="score-display">
+                    <span class="score-label">Your Score</span>
+                    <span id="quiz-final-score" class="score-value">0 / 0</span>
+                </div>
+                <div class="result-actions">
+                    <button id="download-results-btn" class="nav-btn action">
+                        <i class="ri-download-cloud-2-line"></i>
+                        Download All Info
+                    </button>
+                    <button id="close-results-btn" class="nav-btn primary">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="app.js"></script>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
 </body>
 </html>

@@ -46,11 +46,12 @@ class InputResolver:
             return file_bytes, file.filename
             
         if input_type == InputType.TOPIC:
-            if len(topic) > 1000:
+            if len(topic) > 1200:
                 raise HTTPException(
                     status_code=400,
                     detail="Topic must not exceed 1000 characters"
                 )
+
         
         if input_type == InputType.YOUTUBE:
             if not InputResolver.is_valid_youtube_url(youtube_url):
