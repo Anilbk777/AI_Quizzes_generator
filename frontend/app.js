@@ -638,6 +638,74 @@ MODAL.nextBtn.addEventListener('click', () => {
     }
 });
 
+/**
+ * Display a toast notification
+ * @param {string} message - The message to display
+ * @param {'success' | 'error' | 'warning' | 'info'} type - The type of toast
+ */
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    
+    // Icon mapping based on type
+    const iconMap = {
+        success: 'ri-checkbox-circle-line',
+        error: 'ri-error-warning-line',
+        warning: 'ri-alert-line',
+        info: 'ri-information-line'
+    };
+
+    toast.innerHTML = `
+        <div class="toast-icon">
+            <i class="${iconMap[type] || iconMap.info}"></i>
+        </div>
+        <div class="toast-content">
+            <span class="toast-message">${message}</span>
+        </div>
+        <button class="toast-close" aria-label="Close notification">
+            <i class="ri-close-line"></i>
+        </button>
+    `;
+
+    container.appendChild(toast);
+
+    // Trigger entering animation
+    requestAnimationFrame(() => {
+        toast.classList.add('show');
+    });
+
+    // Auto-remove after 5 seconds
+    const timeout = setTimeout(() => hideToast(toast), 5000);
+
+    // Close button logic
+    toast.querySelector('.toast-close').addEventListener('click', () => {
+        clearTimeout(timeout);
+        hideToast(toast);
+    });
+}
+
+/**
+ * Remove a toast with animation
+ * @param {HTMLElement} toast 
+ */
+function hideToast(toast) {
+    toast.classList.remove('show');
+    toast.classList.add('hide');
+    
+    // Wait for animation to finish before removing from DOM
+    toast.addEventListener('transitionend', () => {
+        toast.remove();
+    }, { once: true });
+    
+    // Fallback if transitionend doesn't fire
+    setTimeout(() => {
+        if (toast.parentNode) toast.remove();
+    }, 400);
+}
+
 function shakeElement(el) {
     el.animate([
         { transform: 'translateX(0)' },
