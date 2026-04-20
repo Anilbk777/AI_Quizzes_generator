@@ -1,0 +1,50 @@
+# ── Python artifacts ──────────────────────────────────────────
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+*.egg-info/
+dist/
+build/
+
+# ── Virtual environments ──────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+
+# ── Secrets — NEVER bake these into the image ─────────────────
+.env
+.env.*
+.env.docker
+
+# ── Git / VCS ─────────────────────────────────────────────────
+.git/
+.gitignore
+
+# ── Docker files themselves (no need to copy into the image) ──
+Dockerfile
+.dockerignore
+
+# ── Documentation & meta ──────────────────────────────────────
+README.md
+*.md
+CHANGELOG*
+LICENSE*
+
+# ── Frontend (served separately / not needed by FastAPI) ───────
+frontend/
+
+# ── OS / editor artifacts ─────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# ── Test / CI artifacts ───────────────────────────────────────
+tests/
+.pytest_cache/
+.coverage
+htmlcov/
