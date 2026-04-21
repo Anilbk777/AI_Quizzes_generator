@@ -36,3 +36,7 @@ ENV/
 # Local data
 data/
 uploads/
+
+
+.env.docker
+.env
