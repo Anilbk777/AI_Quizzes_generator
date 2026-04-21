@@ -11,7 +11,7 @@ You are an expert educator generating high-quality multiple choice questions (MC
 Target Difficulty: {difficulty}
 
 STRICT OUTPUT RULES:
-1. Generate EXACTLY {num_questions} questions.
+1. Generate EXACTLY {num_questions} questions and length of each question must not exceed 300 words.
 2. Each question must have EXACTLY 4 options (A, B, C, D).
 3. The correct_option must be the letter (A/B/C/D).
 4. All options must be distinct and plausible.
