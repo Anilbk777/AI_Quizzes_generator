@@ -1,4 +1,4 @@
-const endpoint = "https://ai-quiz-app-repo-v1-0-0.onrender.com/api/mcq/generate";
+const endpoint = "https://ai-quiz-app-repo-latest.onrender.com/api/mcq/generate";
 
 export function getCurrentInputType() {
   const activeBtn = document.querySelector(".source-btn.active");
