@@ -3,11 +3,11 @@ from pydantic import BaseModel, Field, model_validator
 from typing import Literal
 
 class MCQQuestionSchema(BaseModel):
-    question: str = Field(...,description="The MCQ question text, must not be empty", min_length=5, max_length=300)
-    option_a: str = Field(...,description="Option A — plausible but wrong (unless correct)", min_length=1)
-    option_b: str = Field(...,description="Option B — plausible but wrong (unless correct)", min_length=1)
-    option_c: str = Field(...,description="Option C — plausible but wrong (unless correct)", min_length=1)
-    option_d: str = Field(...,description="Option D — plausible but wrong (unless correct)", min_length=1)
+    question: str = Field(...,description="The MCQ question text, must not be empty")
+    option_a: str = Field(...,description="Option A — plausible but wrong (unless correct)")
+    option_b: str = Field(...,description="Option B — plausible but wrong (unless correct)")
+    option_c: str = Field(...,description="Option C — plausible but wrong (unless correct)")
+    option_d: str = Field(...,description="Option D — plausible but wrong (unless correct)")
     correct_option: Literal["A", "B", "C", "D"] = Field(...,
         description="The letter of the correct option"
     )
