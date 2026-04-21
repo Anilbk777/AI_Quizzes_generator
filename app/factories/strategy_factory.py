@@ -1,4 +1,3 @@
-# services/input/strategy_factory.py
 
 from app.domain.enums import InputType
 from app.strategies.base import InputStrategy
