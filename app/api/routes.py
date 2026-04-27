@@ -1,5 +1,4 @@
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
-from typing import Optional, Any
 from app.domain.enums import InputType, Difficulty
 from app.core.logger import logger
 from app.core.exceptions import QuizGenerationError, YouTubeAccessError
@@ -79,7 +78,7 @@ async def generate_mcq(
         # Re-raise explicit HTTP exceptions
         raise
     except Exception as e:
-        logger.exception("Unexpected error in MCQ generation")
+        logger.exception(f"Unexpected error in MCQ generation {e}")
         raise HTTPException(
             status_code=500, 
             detail="An unexpected error occurred during MCQ generation"

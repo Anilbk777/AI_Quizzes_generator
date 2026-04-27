@@ -1,6 +1,5 @@
 from app.domain.models import Quiz, Question
 from app.schemas.response import QuizData, MCQQuestion, MCQOption
-from typing import List
 
 
 class SchemaMapper:
