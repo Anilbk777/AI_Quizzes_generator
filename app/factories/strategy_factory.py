@@ -1,4 +1,3 @@
-
 from app.domain.enums import InputType
 from app.strategies.base import InputStrategy
 from app.strategies.topic import TopicStrategy
@@ -7,7 +6,6 @@ from app.strategies.youtube import YouTubeStrategy
 
 
 class StrategyFactory:
-
     _strategies = {
         InputType.TOPIC: TopicStrategy,
         InputType.FILE: FileStrategy,

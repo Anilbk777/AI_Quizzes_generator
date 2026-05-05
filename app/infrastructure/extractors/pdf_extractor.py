@@ -2,6 +2,7 @@ import fitz
 from app.infrastructure.extractors.base import BaseExtractor
 from app.core.exceptions import FileExtractionError, EmptyContentError
 
+
 class PDFExtractor(BaseExtractor):
     def extract(self, file_bytes: bytes) -> str:
         try:

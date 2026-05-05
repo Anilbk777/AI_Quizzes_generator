@@ -10,7 +10,9 @@ class MCQOption(BaseModel):
 class MCQQuestion(BaseModel):
     question: str = Field(..., description="The question text")
     options: List[MCQOption] = Field(..., description="List of 4 options")
-    correct_option: str = Field(..., description="The key (A/B/C/D) of the correct option")
+    correct_option: str = Field(
+        ..., description="The key (A/B/C/D) of the correct option"
+    )
     explanation: str = Field(..., description="Explanation for the correct answer")
     difficulty: str = Field(..., description="Difficulty level (easy, medium, hard)")
 

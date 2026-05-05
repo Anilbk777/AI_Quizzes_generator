@@ -5,10 +5,12 @@ from app.infrastructure.file_extractor import FileExtractor
 from app.core.logger import logger
 from app.core.exceptions import FileProcessingError
 
+
 class FileStrategy(InputStrategy):
     """
     Strategy for processing file input.
     """
+
     def __init__(self):
         self.extractor = FileExtractor()
 

@@ -1,9 +1,14 @@
-from app.core.exceptions import UnsupportedFileError, FileExtractionError, EmptyContentError
+from app.core.exceptions import (
+    UnsupportedFileError,
+    FileExtractionError,
+    EmptyContentError,
+)
 from app.infrastructure.extractors.pdf_extractor import PDFExtractor
 from app.infrastructure.extractors.docx_extractor import DocxExtractor
 from app.infrastructure.extractors.txt_extractor import TxtExtractor
 
 from app.core.logger import logger
+
 
 class ExtractorFactory:
     @staticmethod
@@ -46,4 +51,6 @@ class FileExtractor:
             raise
         except Exception as e:
             logger.exception(f"Unexpected error during extraction of {file_name}")
-            raise FileExtractionError(f"Unexpected error while extracting {file_name}") from e
+            raise FileExtractionError(
+                f"Unexpected error while extracting {file_name}"
+            ) from e

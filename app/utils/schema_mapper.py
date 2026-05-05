@@ -4,12 +4,7 @@ from app.schemas.response import QuizData, MCQQuestion, MCQOption
 
 class SchemaMapper:
     @classmethod
-    def to_quiz_data(
-        cls, 
-        quiz: Quiz, 
-        input_type: str, 
-        model_used: str
-    ) -> QuizData:
+    def to_quiz_data(cls, quiz: Quiz, input_type: str, model_used: str) -> QuizData:
         """
         Maps a Quiz domain model to a QuizData Pydantic schema.
         """
@@ -18,7 +13,7 @@ class SchemaMapper:
             questions=mcq_questions,
             num_questions=len(mcq_questions),
             input_type=input_type,
-            model_used=model_used
+            model_used=model_used,
         )
 
     @classmethod
@@ -41,5 +36,7 @@ class SchemaMapper:
             options=options,
             correct_option=correct_option_key,
             explanation=question.explanation,
-            difficulty=question.difficulty.value if hasattr(question.difficulty, "value") else str(question.difficulty)
+            difficulty=question.difficulty.value
+            if hasattr(question.difficulty, "value")
+            else str(question.difficulty),
         )

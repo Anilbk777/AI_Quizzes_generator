@@ -44,9 +44,13 @@ class AIService:
             raise
         except Exception as e:
             logger.exception("Unexpected error in AIService")
-            raise MCQGenerationError("An unexpected error occurred during MCQ generation") from e
+            raise MCQGenerationError(
+                "An unexpected error occurred during MCQ generation"
+            ) from e
 
-    def _build_chain(self, provider_name: str, temperature: float, difficulty: Difficulty) -> MCQChain:
+    def _build_chain(
+        self, provider_name: str, temperature: float, difficulty: Difficulty
+    ) -> MCQChain:
         try:
             provider = ProviderFactory.create(
                 provider_name=provider_name,
@@ -62,10 +66,12 @@ class AIService:
     def _invoke(self, chain: MCQChain, content: str, num_questions: int) -> Quiz:
         logger.info("Invoking LLM for MCQ generation...")
         try:
-            response = chain.chain.invoke({
-                "num_questions": num_questions,
-                "content": content,
-            })
+            response = chain.chain.invoke(
+                {
+                    "num_questions": num_questions,
+                    "content": content,
+                }
+            )
         except Exception as e:
             logger.exception("LLM invocation failed")
             raise MCQGenerationError("Failed to generate MCQs from AI") from e

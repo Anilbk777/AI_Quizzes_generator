@@ -4,6 +4,7 @@ from app.core.exceptions import FileExtractionError, EmptyContentError
 
 import io
 
+
 class DocxExtractor(BaseExtractor):
     def extract(self, file_bytes: bytes) -> str:
         try:

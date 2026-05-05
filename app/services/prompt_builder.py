@@ -1,11 +1,12 @@
 from langchain_core.prompts import ChatPromptTemplate
 
+
 class PromptBuilder:
     """
     A builder class for constructing LangChain prompts.
     Can be instantiated and used to generate prompts for runnables.
     """
-    
+
     DEFAULT_SYSTEM_TEMPLATE = """\
 You are an expert educator generating high-quality multiple choice questions (MCQs).
 Target Difficulty: {difficulty}
@@ -39,12 +40,26 @@ Reminder: If the content is nonsense, generate a General Knowledge quiz instead.
         """
         Builds and returns the ChatPromptTemplate for MCQ generation.
         This prompt can be used directly in a LangChain runnable pipeline.
-        
+
         Example:
             builder = PromptBuilder()
             runnable = builder.build_mcq_prompt(difficulty="hard") | llm
-        """ 
-        return ChatPromptTemplate.from_messages([
-            ("system", self.system_template.format(difficulty=difficulty, num_questions="{num_questions}")),
-            ("human", self.human_template.format(difficulty=difficulty, content="{content}", num_questions="{num_questions}")),
-        ])
+        """
+        return ChatPromptTemplate.from_messages(
+            [
+                (
+                    "system",
+                    self.system_template.format(
+                        difficulty=difficulty, num_questions="{num_questions}"
+                    ),
+                ),
+                (
+                    "human",
+                    self.human_template.format(
+                        difficulty=difficulty,
+                        content="{content}",
+                        num_questions="{num_questions}",
+                    ),
+                ),
+            ]
+        )

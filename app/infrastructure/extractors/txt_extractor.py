@@ -1,6 +1,7 @@
 from app.infrastructure.extractors.base import BaseExtractor
 from app.core.exceptions import FileExtractionError, EmptyContentError
 
+
 class TxtExtractor(BaseExtractor):
     def extract(self, file_bytes: bytes) -> str:
         try:

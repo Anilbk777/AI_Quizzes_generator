@@ -17,7 +17,7 @@ async def generate_mcq(
     num_questions: int = Form(5),
     difficulty: Difficulty = Form(Difficulty.MEDIUM),
     provider_name: str = Form("groq"),
-    topic: str = Form(None), 
+    topic: str = Form(None),
     youtube_url: str = Form(None),
     file: UploadFile = File(None),
 ):
@@ -29,38 +29,31 @@ async def generate_mcq(
             f"Received MCQ generation request - input_type: {input_type}, "
             f"num_questions: {num_questions}, difficulty: {difficulty}, provider_name: {provider_name}"
         )
-        
+
         # 1. Validate and prepare input data based on type
         input_data = await InputResolver.resolve(
-            input_type=input_type,
-            topic=topic,
-            youtube_url=youtube_url,
-            file=file
+            input_type=input_type, topic=topic, youtube_url=youtube_url, file=file
         )
         # 2. Generate quiz domain model through the service
         quiz = quiz_service.generate_quiz(
-            input_type=input_type, 
-            input_data=input_data, 
-            num_questions=num_questions, 
+            input_type=input_type,
+            input_data=input_data,
+            num_questions=num_questions,
             provider_name=provider_name,
-            difficulty=difficulty
+            difficulty=difficulty,
         )
-        
+
         # 3. Map Domain model to API Response Schema
         quiz_data = SchemaMapper.to_quiz_data(
-            quiz=quiz, 
-            input_type=input_type.value, 
-            model_used=provider_name
+            quiz=quiz, input_type=input_type.value, model_used=provider_name
         )
-        
+
         logger.info("MCQ generation successful")
 
         return QuizResponse(
-            success=True,
-            data=quiz_data,
-            message="Quiz generated successfully"
+            success=True, data=quiz_data, message="Quiz generated successfully"
         )
-    
+
     except YouTubeAccessError as e:
         logger.warning(f"YouTube access error: {str(e)}")
         raise HTTPException(
@@ -68,8 +61,8 @@ async def generate_mcq(
             detail={
                 "error": "youtube_access_blocked",
                 "message": str(e),
-                "suggestion": "Try again later or submit the video topic as text instead."
-            }
+                "suggestion": "Try again later or submit the video topic as text instead.",
+            },
         )
     except QuizGenerationError as e:
         logger.error(f"Quiz generation failed: {str(e)}")
@@ -80,6 +73,5 @@ async def generate_mcq(
     except Exception as e:
         logger.exception(f"Unexpected error in MCQ generation {e}")
         raise HTTPException(
-            status_code=500, 
-            detail="An unexpected error occurred during MCQ generation"
+            status_code=500, detail="An unexpected error occurred during MCQ generation"
         )

@@ -3,6 +3,7 @@ from langchain_core.documents import Document
 import random
 from app.core.logger import logger
 
+
 class TextChunker:
     def __init__(
         self,
@@ -17,10 +18,7 @@ class TextChunker:
 
     def create_documents(self, text: str) -> list[Document]:
         docs = self._splitter.create_documents([text])
-        return [
-            doc for doc in docs
-            if len(doc.page_content.strip()) > 5
-        ]
+        return [doc for doc in docs if len(doc.page_content.strip()) > 5]
 
     def get_content(self, text: str, num_questions: int, max_chars: int = 30000) -> str:
         """
@@ -33,13 +31,17 @@ class TextChunker:
         if len(documents) <= num_questions:
             selected = documents
         else:
-            logger.info(f"Sampling {num_questions} chunks from {len(documents)} total chunks")
+            logger.info(
+                f"Sampling {num_questions} chunks from {len(documents)} total chunks"
+            )
             selected = random.sample(documents, k=num_questions)
 
         content = "\n\n".join(doc.page_content for doc in selected)
-        
+
         if len(content) > max_chars:
-            logger.warning(f"Merged content ({len(content)} chars) exceeds safety limit ({max_chars}). Truncating.")
+            logger.warning(
+                f"Merged content ({len(content)} chars) exceeds safety limit ({max_chars}). Truncating."
+            )
             return content[:max_chars]
-            
+
         return content

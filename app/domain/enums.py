@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class InputType(str, Enum):
     TOPIC = "topic"
     FILE = "file"
