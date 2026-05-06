@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from app.api.routes import router
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
+from datetime import datetime
 
 app = FastAPI(title="AI Quiz Generator API")
 
@@ -20,6 +21,14 @@ app.add_middleware(
 def read_root():
     return {"message": "Welcome to the AI Quiz Generator API"}
 
+@app.get("/health")
+def health_check():
+    """Lightweight endpoint to check backend status and prevent cold sleep"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat(),
+        "service": "AI Quiz Generator API",
+    }
 
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
